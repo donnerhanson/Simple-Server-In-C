@@ -62,20 +62,33 @@
 
 
 <!-- ABOUT THE PROJECT -->
-## About The Project
+## About The Program
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
+This program instantiates a server at a user defined IP address
+and port number that gives a client access to the page
+"index.html", OR some other developer-user defined page,
+when the client issues a GET request in the terminal or FireFox Browser.
 
-Here's a blank template to get started:
-**To avoid retyping too much info. Do a search and replace with your text editor for the following:**
-`donnerhanson`, `Simple-Server-In-C`, `donnerhanson`, `hanso127@mail.chapman.edu`
+The server can connect to multiple client sessions using threading.
+
+When a user sends a request the server notifies the user if there is an invalid request and the type of error otherwise will send
+the user the intended html document
+
+The server closes the connection upon sending either
+the document or the error information
+
+The supported requests are:  
+1. "GET / HTTP/1.1"
+2. "GET /filename HTTP/1.1"
+3. "GET / HTTP/1.0"
+4. "GET /filename HTTP/1.0"
+
+Supported file extension types are:
+1. html
+2. txt
 
 
-### Built With
 
-* []()
-* []()
-* []()
 
 
 
