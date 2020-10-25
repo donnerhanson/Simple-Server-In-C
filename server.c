@@ -133,7 +133,7 @@ void *client_handler(void *arg)
         // trim whitespace off of buffer
         text = trim(text);
         int len_text = (int)strlen(text);
-        printf("\nTEXT COMMAND: %s, Length %d \n", text, len_text);
+        //printf("\nTEXT COMMAND: %s, Length %d \n", text, len_text);
         // getProtocolIndexVals command
 
         /*
@@ -227,12 +227,12 @@ void *client_handler(void *arg)
         // seek back to beginning
         fseek(fp, 0L, SEEK_SET);
 
-        printf("\nFSIZE: %zu\n",fsize );
+        //printf("\nFSIZE: %zu\n",fsize );
         while ((size = (fread (&source, 1, (buff_allocation_len), fp))) > 1)
         {
-          printf("\nSIZE: %zu\n",size);
-          printf("FSIZE: %zu\n",fsize);
-          printf("BUFF ALL LEN: %d\n", buff_allocation_len);
+          //printf("\nSIZE: %zu\n",size);
+          //printf("FSIZE: %zu\n",fsize);
+          //printf("BUFF ALL LEN: %d\n", buff_allocation_len);
           if (fsize > buff_allocation_len)
             fsize = fsize - buff_allocation_len;
           else
