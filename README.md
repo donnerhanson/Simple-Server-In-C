@@ -296,7 +296,7 @@ PROT/NUM: HTTP/1.1, end_index: 21
 <!-- CONTACT -->
 ## Contact
 
-Donner Hanson - [@hansondonner](https://twitter.com/donnerhanson) - hanso127@mail.chapman.edu - ChapmanID - 001276484
+Donner Hanson - [@hansondonner](https://twitter.com/hansondonner) - hanso127@mail.chapman.edu - ChapmanID - 001276484
 
 Project Link: [https://github.com/donnerhanson/Simple-Server-In-C](https://github.com/donnerhanson/Simple-Server-In-C)
 
