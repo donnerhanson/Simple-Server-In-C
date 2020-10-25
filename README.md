@@ -103,8 +103,8 @@ git clone https://github.com/donnerhanson/Simple-Server-In-C.git
 2. Ensure that index.html, 404.html, and server.c exist within the same directory on your machine
 3. Compile the program
 ```sh
-LINUX:
-gcc server.c -o server -lpthread -lrt
+LINUX CentOS 6.2:
+gcc -std=c99 server.c -o server -pthread -lrt
 MacOS:
 gcc server.c -o server -lpthread
 ```
