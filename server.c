@@ -1,9 +1,8 @@
 
 /*
  * Name: Donner Hanson
- *Date: October 18, 2020
- *Project: Building a Web Server
- *Assignment: Operating Systems Assignment 4
+ *Date: October 24, 2020
+ *Project: Simple Server in C
  *Program Description:
  This program instantiates a server at a user defined IP address
  and port number that gives a client access to the page
@@ -305,6 +304,8 @@ int main(int argc, char *argv[])
    unsigned int clientlen;
    clen = &clientlen;
 
+
+  // SET DEFAULT PORT NUM IF NOT SPECIFIED
    if (argc == 2) {
        server_addr.sin_port = htons(PORT_NUM);
    }
