@@ -21,8 +21,10 @@
  the document or the error information
 
  * compilation
+ MacOS:
  gcc server.c -o server -pthread
-
+LINUX:
+gcc -Wall server.c -o server -pthread -lrt
  * setup
  server executable MUST be in the same local directory as
   index.html and 404.html

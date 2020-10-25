@@ -34,19 +34,11 @@
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
-  <h3 align="center">YOUR_TITLE</h3>
+  <h3 align="center">Simple Server in C</h3>
 
   <p align="center">
-    YOUR_SHORT_DESCRIPTION
+  A program written in C to instantiate a simple server
     <br />
-    <a href="https://github.com/donnerhanson/Simple-Server-In-C"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/donnerhanson/Simple-Server-In-C">View Demo</a>
-    ·
-    <a href="https://github.com/donnerhanson/Simple-Server-In-C/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/donnerhanson/Simple-Server-In-C/issues">Request Feature</a>
   </p>
 </p>
 
