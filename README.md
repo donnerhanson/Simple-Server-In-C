@@ -64,7 +64,7 @@ This program instantiates a server at a user defined IP address and user-defined
 
 The server connects to multiple client sessions using threading.
 
-When a user sends a properly formatted request, the server returns the requested data if the data exists and also displays information about the received request. If the user supplies an invalid request in terminal, the server responds with the error and expected input. In both the terminal and browser if the user inputs an invalid file name, but properly formatted request, the type of error is parsed and displayed by the server terminal and the client is sent a 404 not found splash page. The type of error can be viewed in the server terminal window. The connection is closed upon both a successful or unsuccessful GET request.
+When a user sends a properly formatted request, the server returns the requested data if the data exists and also displays information about the received request. If the user supplies an invalid request in terminal, the server responds with the error and expected input. In both the terminal and browser if the user inputs an invalid file name or bad permissions file, but properly formatted request, the type of error is parsed and displayed by the server terminal and the client is sent a 404 not found splash page or 403 or to a 403 FORBIDDEN ACCESS page. The type of error can be viewed in the server terminal window. The connection is closed upon both a successful or unsuccessful GET request.
 
 The server is equipped to send html and txt, i.e. "plain text" data.
 
