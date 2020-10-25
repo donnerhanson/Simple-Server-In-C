@@ -138,21 +138,9 @@ void *client_handler(void *arg)
         // trim whitespace off of buffer
         text = trim(text);
         int len_text = (int)strlen(text);
-        //printf("\nTEXT COMMAND: %s, Length %d \n", text, len_text);
         // getProtocolIndexVals command
-
-        /*
-        TESTING STATEMENT
-        for (int i = 0; i < PROTOCOL_PARSE_LEN; i++){
-        printf("values before: %d\n", index_vals[i]);
-      }*/
         index_vals_ptr = getProtocolIndexVals(text, len_text, index_vals_ptr, PROTOCOL_PARSE_LEN);
-        /*
-        TESTING STATEMENT
-        for (int i = 0; i < PROTOCOL_PARSE_LEN; i++){
-        printf("values after: %d\n", index_vals[i]);
-      }
-      */
+
 
     if (index_vals[GET] == WRONG_PROT) // if NOT "GET /"
     {
@@ -187,10 +175,6 @@ void *client_handler(void *arg)
           file_name[i] = text[j];
         }
 
-        /*
-        TESTING STATEMENT
-        printf("FILENAME = %s\n", file_name);
-        */
       }
 
       // SET MSG RCV and MSG ERR
@@ -216,12 +200,6 @@ void *client_handler(void *arg)
       if (fp != NULL) {
 
 
-        // USE FREAD TO READ ALL INTO BUFFER AT ONCE
-        //Seek to the end of the file to determine the file size
-        //fseek(fp, 0L, SEEK_END);
-        //size_t fileSize = ftell(fp);
-        //fseek(fp, 0L, SEEK_SET);
-
         size_t size;
         snprintf(buf, sizeof(buf), "%s\r\n", found); // send OK response
         write(sockfd, buf, strlen(buf));
@@ -232,12 +210,8 @@ void *client_handler(void *arg)
         // seek back to beginning
         fseek(fp, 0L, SEEK_SET);
 
-        //printf("\nFSIZE: %zu\n",fsize );
         while ((size = (fread (&source, 1, (buff_allocation_len), fp))) > 1)
         {
-          //printf("\nSIZE: %zu\n",size);
-          //printf("FSIZE: %zu\n",fsize);
-          //printf("BUFF ALL LEN: %d\n", buff_allocation_len);
           if (fsize > buff_allocation_len)
             fsize = fsize - buff_allocation_len;
           else
@@ -507,7 +481,8 @@ currIndex = index_first_slash + 1; // start on first letter next word
    tempBuff[j] = str[i];
 
  }
-printf("FNAME: %s, fname_Index: %d\n", tempBuff, fname_end_index); // check fname
+ //printf("FNAME: %s, fname_Index: %d\n", tempBuff, fname_end_index); // check fname
+printf("FNAME: %s\n", tempBuff); // check fname
 
 currIndex = (fname_end_index + 1); // after "fName " on first letter next word
 
@@ -532,7 +507,6 @@ Host,User-Agent,Accept, Accept-Language,Accept-Encoding,DNT, Connection, Referer
 
 for (int i = currIndex, j = 0; i < len; i++, j++) {
   protocolNum_index = i;
-  // printf ("STR %c : [%d]\n", str[i], i);
   tempBuff[j] = str[i];
 
   if (j < strlen(http_0) - 1) {
@@ -546,7 +520,8 @@ for (int i = currIndex, j = 0; i < len; i++, j++) {
     break;
   }
 }
-printf("PROT/NUM: %s, end_index: %d \n", tempBuff, protocolNum_index);
+// printf("PROT/NUM: %s, end_index: %d \n", tempBuff, protocolNum_index);
+printf("PROT/NUM: %s\n", tempBuff);
 if ((strcmp(tempBuff, http_0) != 0) && (strcmp(tempBuff, http_1) != 0))
 {
   int_arr[REQ_PROT] = BAD_HTTP_REQ;
@@ -574,7 +549,7 @@ int checkPermissions(char* str)
   // Check read access
   int status = 0;
   status = access (str, R_OK);
-  printf ("ENOENT: %d\nEACCESS: %d", ENOENT, EACCES);
+  //printf ("ENOENT: %d\nEACCESS: %d", ENOENT, EACCES);
     if (errno == ENOENT)
       return FNF;
     else if (errno == EACCES)
