@@ -134,7 +134,8 @@ followed by enter.
 
 Incorrect input will receive an error message with the expected user input.
 
-4. Shutting Down the Server
+4. Shutting Down the Server  
+
 Because the server is meant to exist in a "forever loop" the server process must be shut down with an interrupt signal. In the server terminal window press the keys <Ctrl> and <C> simultaneously to end the server process.
 
 ## Example
