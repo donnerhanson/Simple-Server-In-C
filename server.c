@@ -69,6 +69,7 @@ https://stackoverflow.com/questions/46669468/c-fread-split-textfile-into-chunks
  */
 
 #include <ctype.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -93,6 +94,8 @@ https://stackoverflow.com/questions/46669468/c-fread-split-textfile-into-chunks
 #define REQ_PROT 2
 
 #define FNF -10
+#define NO_ACCESS -11
+#define HAS_ACCESS 0
 
 char *trim(char *str);
 // function searches for first_slash, next_space, second_slash, end
@@ -100,6 +103,8 @@ char *trim(char *str);
 int *getProtocolIndexVals(char *str, int len, int* int_arr, int i_arr_sz);
 
 int contains(int *int_arr, int i_arr_sz);
+
+int checkPermissions(char* f_name);
 
 void *client_handler(void *arg)
 {
@@ -204,10 +209,10 @@ void *client_handler(void *arg)
       // read file to intermediate buffer
       // max buffer length minus the response include null terminator
 
-
       int buff_allocation_len = MAX_LEN - RESPONSE_LEN;
       char source[MAX_LEN - RESPONSE_LEN + 1];
       FILE *fp = fopen(file_name, "r");
+      // if null find out why
       if (fp != NULL) {
 
 
@@ -264,8 +269,42 @@ void *client_handler(void *arg)
 
       }
       else {
-        // FILE WASN'T FOUND - send ERROR SPLASH PAGE
-        strcpy(file_name, "404.html");
+        // FILE WASN'T FOUND or no permissions - send ERROR SPLASH PAGE
+        int permission = checkPermissions(file_name);
+
+        if ('1' == text[index_vals[REQ_PROT]]){
+          if (permission == FNF){
+            not_found = "HTTP/1.1 404 NOT FOUND\n\n";
+            strcpy(file_name, "404.html");
+          }
+          else if (permission == NO_ACCESS){
+            not_found = "HTTP/1.1 403 NOT FOUND\n\n";
+            strcpy(file_name, "403.html");
+          }
+          else {
+            // an unexpected error - send not found for now
+            not_found = "HTTP/1.1 404 NOT FOUND\n\n";
+            strcpy(file_name, "404.html");
+          }
+        }
+        else if ('0' == text[index_vals[REQ_PROT]]) {
+          if (permission == FNF){
+            not_found = "HTTP/1.0 404 NOT FOUND\n\n";
+            strcpy(file_name, "404.html");
+          }
+          else if (permission == NO_ACCESS){
+            not_found = "HTTP/1.0 403 NOT FOUND\n\n";
+            strcpy(file_name, "403.html");
+          }
+          else{
+            // an unexpected error - send not found for now
+            not_found = "HTTP/1.0 404 NOT FOUND\n\n";
+            strcpy(file_name, "404.html");
+          }
+
+
+        }
+
         fp = fopen(file_name, "r");
         if (fp != NULL) {
           size_t fLength = fread(&source, sizeof(char),
@@ -528,4 +567,18 @@ int containsWrongProt(int* int_arr, int i_arr_sz)
     }
   }
   return 0;
+}
+
+int checkPermissions(char* str)
+{
+  // Check read access
+  int status = 0;
+  status = access (str, R_OK);
+  printf ("ENOENT: %d\nEACCESS: %d", ENOENT, EACCES);
+    if (errno == ENOENT)
+      return FNF;
+    else if (errno == EACCES)
+      return NO_ACCESS;
+
+return FNF;
 }
