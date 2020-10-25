@@ -8,8 +8,8 @@
  and port number that gives a client access to the page
  "index.html", OR some other developer-user defined page,
  when the client issues a GET request in the terminal or FireFox Browser
-  "GET / HTTP/1.1"
-  "GET / HTTP/1.0"
+ "GET / HTTP/1.1"
+ "GET / HTTP/1.0"
 
  The server can connect to multiple client sessions using threading.
 
@@ -23,11 +23,11 @@
  * compilation
  MacOS:
  gcc server.c -o server -pthread
-LINUX:
-gcc -Wall server.c -o server -pthread -lrt
+ LINUX:
+ gcc -Wall server.c -o server -pthread -lrt
  * setup
  server executable MUST be in the same local directory as
-  index.html and 404.html
+ index.html and 404.html
 
  * Running in first terminal
  ./server <IP> <port>
@@ -38,33 +38,33 @@ gcc -Wall server.c -o server -pthread -lrt
  telnet 127.0.0.1 6789
 
  *accessing in firefox browser - FireFox tested
-http://localhost:6789
+ http://localhost:6789
 
 
 
  NOTE: if there is any plain text (.txt) file or html (.html) file hosted
  in the same directory as server.c
-http://localhost:6789/filename.extension
-will return that file and the contents of the file
+ http://localhost:6789/filename.extension
+ will return that file and the contents of the file
 
  IF the file doesn't exist:
  http://localhost:6789/any-non-existent-file.extension
-Will redirect to 404.html
+ Will redirect to 404.html
 
 
-*OS Compatability:
-This program is functional on MacOS and Linux
+ *OS Compatability:
+ This program is functional on MacOS and Linux
 
 
-// REFERENCES
-TRIM WHITE SPACE
-https://stackoverflow.com/questions/122616/how-do-i-trim-leading-trailing-whitespace-in-a-standard-way
+ // REFERENCES
+ TRIM WHITE SPACE
+ https://stackoverflow.com/questions/122616/how-do-i-trim-leading-trailing-whitespace-in-a-standard-way
 
-404 HTML BOILERPLATE CODE
-https://github.com/h5bp/html5-boilerplate/blob/master/src/404.html
+ 404 HTML BOILERPLATE CODE
+ https://github.com/h5bp/html5-boilerplate/blob/master/src/404.html
 
-fread SPLITTING text into chunks
-https://stackoverflow.com/questions/46669468/c-fread-split-textfile-into-chunks
+ fread SPLITTING text into chunks
+ https://stackoverflow.com/questions/46669468/c-fread-split-textfile-into-chunks
 
  */
 
@@ -133,171 +133,171 @@ void *client_handler(void *arg)
 
     if (read (sockfd, text, length) == 0){
         _exit(EXIT_FAILURE); // nothing read and something bad happened
-      }
+    }
 
-        // trim whitespace off of buffer
-        text = trim(text);
-        int len_text = (int)strlen(text);
-        // getProtocolIndexVals command
-        index_vals_ptr = getProtocolIndexVals(text, len_text, index_vals_ptr, PROTOCOL_PARSE_LEN);
+    // trim whitespace off of buffer
+    text = trim(text);
+    int len_text = (int)strlen(text);
+    // getProtocolIndexVals command
+    index_vals_ptr = getProtocolIndexVals(text, len_text, index_vals_ptr, PROTOCOL_PARSE_LEN);
 
 
     if (index_vals[GET] == WRONG_PROT) // if NOT "GET /"
     {
-      snprintf(buf, sizeof(buf),
-       "Was expecting %s but recieved command %s\r\n", get_prot, text);
-       write(sockfd, buf, strlen(buf));
-       cont = 1;
+        snprintf(buf, sizeof(buf),
+                 "Was expecting %s but recieved command %s\r\n", get_prot, text);
+        write(sockfd, buf, strlen(buf));
+        cont = 1;
     }
     else if (index_vals[REQ_PROT] == BAD_HTTP_REQ) // IF NOT "HTTP/1.0"or"HTTP/1.1"
     {
 
-      snprintf(buf, sizeof(buf),
-       "Was expecting %s or %s but recieved %s\r\n", http_0, http_1,
-       text + index_vals[FNAME]);
-       write(sockfd, buf, strlen(buf));
-       cont = 1;
+        snprintf(buf, sizeof(buf),
+                 "Was expecting %s or %s but recieved %s\r\n", http_0, http_1,
+                 text + index_vals[FNAME]);
+        write(sockfd, buf, strlen(buf));
+        cont = 1;
     }
 
 
-// GET FILE NAME AND STREAM CONTENTS
+    // GET FILE NAME AND STREAM CONTENTS
     if (cont == 0) {
-      memset(&file_name[0],'\0',MAX_LEN);
-      // NO FILENAME PASSED
-      if (index_vals[GET] == index_vals[FNAME])
-      {
-        strcpy(file_name, "index.html");
-      }
-      else {
-        // get the string that exist between GET and fName
-        for (int i = 0, j = index_vals[GET] + 1; j <= index_vals[FNAME]; i++, j++)
+        memset(&file_name[0],'\0',MAX_LEN);
+        // NO FILENAME PASSED
+        if (index_vals[GET] == index_vals[FNAME])
         {
-          file_name[i] = text[j];
+            strcpy(file_name, "index.html");
+        }
+        else {
+            // get the string that exist between GET and fName
+            for (int i = 0, j = index_vals[GET] + 1; j <= index_vals[FNAME]; i++, j++)
+            {
+                file_name[i] = text[j];
+            }
+
         }
 
-      }
-
-      // SET MSG RCV and MSG ERR
-      char* found;
-      char* not_found;
-      if ('1' == text[index_vals[REQ_PROT]]){
-        not_found = "HTTP/1.1 404 NOT FOUND\n\n";
-        found = "HTTP/1.1 200 OK\n\n";
-      }
-      else if ('0' == text[index_vals[REQ_PROT]]) {
-        not_found = "HTTP/1.0 404 NOT FOUND\n\n";
-        found = "HTTP/1.0 200 OK\n\n";
-      }
-
-
-      // read file to intermediate buffer
-      // max buffer length minus the response include null terminator
-
-      int buff_allocation_len = MAX_LEN - RESPONSE_LEN;
-      char source[MAX_LEN - RESPONSE_LEN + 1];
-      FILE *fp = fopen(file_name, "r");
-      // if null find out why
-      if (fp != NULL) {
-
-
-        size_t size;
-        snprintf(buf, sizeof(buf), "%s\r\n", found); // send OK response
-        write(sockfd, buf, strlen(buf));
-        size_t fsize;
-        // READ FROM file and out to Socket until end of input file
-        fseek(fp, 0L, SEEK_END); // get file size
-        fsize = ftell(fp);
-        // seek back to beginning
-        fseek(fp, 0L, SEEK_SET);
-
-        while ((size = (fread (&source, 1, (buff_allocation_len), fp))) > 1)
-        {
-          if (fsize > buff_allocation_len)
-            fsize = fsize - buff_allocation_len;
-          else
-          {
-            // this is the last block of the file to output
-            snprintf(buf, sizeof(buf), "%s", source);
-            write(sockfd, buf, fsize);
-            memset(buf, '\0', strlen(buf));
-            break;
-          }
-
-          snprintf(buf, sizeof(buf), "%s", source);
-          write(sockfd, buf, strlen(buf));
-          memset(&buf, '\0', strlen(buf));
-          memset(&source, '\0', strlen(source));
-
-
-
-        }
-        fclose(fp);
-        if ( ferror( fp ) != 0 ) {
-          fputs("Error reading file", stderr);
-        }
-
-
-
-
-
-
-      }
-      else {
-        // FILE WASN'T FOUND or no permissions - send ERROR SPLASH PAGE
-        int permission = checkPermissions(file_name);
-
+        // SET MSG RCV and MSG ERR
+        char* found;
+        char* not_found;
         if ('1' == text[index_vals[REQ_PROT]]){
-          if (permission == FNF){
             not_found = "HTTP/1.1 404 NOT FOUND\n\n";
-            strcpy(file_name, "404.html");
-          }
-          else if (permission == NO_ACCESS){
-            not_found = "HTTP/1.1 403 NOT FOUND\n\n";
-            strcpy(file_name, "403.html");
-          }
-          else {
-            // an unexpected error - send not found for now
-            not_found = "HTTP/1.1 404 NOT FOUND\n\n";
-            strcpy(file_name, "404.html");
-          }
+            found = "HTTP/1.1 200 OK\n\n";
         }
         else if ('0' == text[index_vals[REQ_PROT]]) {
-          if (permission == FNF){
             not_found = "HTTP/1.0 404 NOT FOUND\n\n";
-            strcpy(file_name, "404.html");
-          }
-          else if (permission == NO_ACCESS){
-            not_found = "HTTP/1.0 403 NOT FOUND\n\n";
-            strcpy(file_name, "403.html");
-          }
-          else{
-            // an unexpected error - send not found for now
-            not_found = "HTTP/1.0 404 NOT FOUND\n\n";
-            strcpy(file_name, "404.html");
-          }
-
-
+            found = "HTTP/1.0 200 OK\n\n";
         }
 
-        fp = fopen(file_name, "r");
+
+        // read file to intermediate buffer
+        // max buffer length minus the response include null terminator
+
+        int buff_allocation_len = MAX_LEN - RESPONSE_LEN;
+        char source[MAX_LEN - RESPONSE_LEN + 1];
+        FILE *fp = fopen(file_name, "r");
+        // if null find out why
         if (fp != NULL) {
-          size_t fLength = fread(&source, sizeof(char),
-                                    MAX_LEN - RESPONSE_LEN + 1, fp);
-          if ( ferror( fp ) != 0 ) {
-            fputs("Error reading file", stderr);
-          }
-          else {
-            source[++fLength] = '\0'; /* Just to be safe. */
-          }
+
+
+            size_t size;
+            snprintf(buf, sizeof(buf), "%s\r\n", found); // send OK response
+            write(sockfd, buf, strlen(buf));
+            size_t fsize;
+            // READ FROM file and out to Socket until end of input file
+            fseek(fp, 0L, SEEK_END); // get file size
+            fsize = ftell(fp);
+            // seek back to beginning
+            fseek(fp, 0L, SEEK_SET);
+
+            while ((size = (fread (&source, 1, (buff_allocation_len), fp))) > 1)
+            {
+                if (fsize > buff_allocation_len)
+                    fsize = fsize - buff_allocation_len;
+                else
+                {
+                    // this is the last block of the file to output
+                    snprintf(buf, sizeof(buf), "%s", source);
+                    write(sockfd, buf, fsize);
+                    memset(buf, '\0', strlen(buf));
+                    break;
+                }
+
+                snprintf(buf, sizeof(buf), "%s", source);
+                write(sockfd, buf, strlen(buf));
+                memset(&buf, '\0', strlen(buf));
+                memset(&source, '\0', strlen(source));
+
+
+
+            }
+            fclose(fp);
+            if ( ferror( fp ) != 0 ) {
+                fputs("Error reading file", stderr);
+            }
+
+
+
+
+
+
         }
-        fclose(fp);
-        snprintf(buf, sizeof(buf), "%s\r\n%s\n", not_found, source);
-        write(sockfd, buf, strlen(buf));
-      }
+        else {
+            // FILE WASN'T FOUND or no permissions - send ERROR SPLASH PAGE
+            int permission = checkPermissions(file_name);
+
+            if ('1' == text[index_vals[REQ_PROT]]){
+                if (permission == FNF){
+                    not_found = "HTTP/1.1 404 NOT FOUND\n\n";
+                    strcpy(file_name, "404.html");
+                }
+                else if (permission == NO_ACCESS){
+                    not_found = "HTTP/1.1 403 NOT FOUND\n\n";
+                    strcpy(file_name, "403.html");
+                }
+                else {
+                    // an unexpected error - send not found for now
+                    not_found = "HTTP/1.1 404 NOT FOUND\n\n";
+                    strcpy(file_name, "404.html");
+                }
+            }
+            else if ('0' == text[index_vals[REQ_PROT]]) {
+                if (permission == FNF){
+                    not_found = "HTTP/1.0 404 NOT FOUND\n\n";
+                    strcpy(file_name, "404.html");
+                }
+                else if (permission == NO_ACCESS){
+                    not_found = "HTTP/1.0 403 NOT FOUND\n\n";
+                    strcpy(file_name, "403.html");
+                }
+                else{
+                    // an unexpected error - send not found for now
+                    not_found = "HTTP/1.0 404 NOT FOUND\n\n";
+                    strcpy(file_name, "404.html");
+                }
+
+
+            }
+
+            fp = fopen(file_name, "r");
+            if (fp != NULL) {
+                size_t fLength = fread(&source, sizeof(char),
+                                       MAX_LEN - RESPONSE_LEN + 1, fp);
+                if ( ferror( fp ) != 0 ) {
+                    fputs("Error reading file", stderr);
+                }
+                else {
+                    source[++fLength] = '\0'; /* Just to be safe. */
+                }
+            }
+            fclose(fp);
+            snprintf(buf, sizeof(buf), "%s\r\n%s\n", not_found, source);
+            write(sockfd, buf, strlen(buf));
+        }
     }
     /* send result to client */
     free (text); // get rid of dynamically allocated memory
-    //write(sockfd, buf, strlen(buf));
+                 //write(sockfd, buf, strlen(buf));
     memset(&buf[0], '\0', MAX_LEN); // nullify buffer
     close(sockfd); // close socket
     ptr_rtn = (void *)&sockfd; // address of closed socket
@@ -308,71 +308,71 @@ void *client_handler(void *arg)
 int main(int argc, char *argv[])
 {
 
-   const int backlog = 5;
+    const int backlog = 5;
 
-   struct  sockaddr_in  server_addr;
-   struct  sockaddr_in  client_addr;
-   pthread_t tid;
+    struct  sockaddr_in  server_addr;
+    struct  sockaddr_in  client_addr;
+    pthread_t tid;
 
-   int sockfd, client_sockfd;
-   unsigned int *clen;
-   unsigned int clientlen;
-   clen = &clientlen;
+    int sockfd, client_sockfd;
+    unsigned int *clen;
+    unsigned int clientlen;
+    clen = &clientlen;
 
 
-  // SET DEFAULT PORT NUM IF NOT SPECIFIED
-   if (argc == 2) {
-       server_addr.sin_port = htons(PORT_NUM);
-   }
-   if (!(argc == 3 || argc == 2)) {
-       printf("Usage: %s <ip-address> <port>  or <ip-address> \n", argv[0]);
-       return -1;
-   }
+    // SET DEFAULT PORT NUM IF NOT SPECIFIED
+    if (argc == 2) {
+        server_addr.sin_port = htons(PORT_NUM);
+    }
+    if (!(argc == 3 || argc == 2)) {
+        printf("Usage: %s <ip-address> <port>  or <ip-address> \n", argv[0]);
+        return -1;
+    }
 
-   /* Create the socket */
-   sockfd = socket(AF_INET, SOCK_STREAM, 0);
-   if (sockfd == -1) {
-       perror("Could not create socket");
-       return -1;
-   }
+    /* Create the socket */
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd == -1) {
+        perror("Could not create socket");
+        return -1;
+    }
 
-   /* Name the socket */
-   server_addr.sin_family = AF_INET;
-   server_addr.sin_addr.s_addr = inet_addr(argv[1]);
-   if (argc == 3){
-    server_addr.sin_port = htons(atoi(argv[2]));
-  }
+    /* Name the socket */
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = inet_addr(argv[1]);
+    if (argc == 3){
+        server_addr.sin_port = htons(atoi(argv[2]));
+    }
 
-   /* bind to server socket */
-   if (bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) {
-       perror("Could not bind to socket");
-       close(sockfd);
-       return -1;
-   }
+    /* bind to server socket */
+    if (bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) {
+        perror("Could not bind to socket");
+        close(sockfd);
+        return -1;
+    }
 
-   /* wait for client to connect */
-   listen(sockfd, backlog);
+    /* wait for client to connect */
+    listen(sockfd, backlog);
 
-   while (1) {
+    while (1) {
 
-       /* Accept a connection */
-       clientlen = sizeof(client_addr);
-       client_sockfd = accept(sockfd, (struct sockaddr *)&client_addr, &clientlen);
-       if (client_sockfd == -1) {
-           perror("Unable to accept client connection request");
-           continue;
-       }
+        /* Accept a connection */
+        clientlen = sizeof(client_addr);
+        client_sockfd = accept(sockfd, (struct sockaddr *)&client_addr, &clientlen);
+        if (client_sockfd == -1) {
+            perror("Unable to accept client connection request");
+            continue;
+        }
 
-       if (pthread_create(&tid, NULL, client_handler, (void *)&client_sockfd) < 0) {
-           perror("Unable to create client thread");
-           break;
-       }
+        if (pthread_create(&tid, NULL, client_handler, (void *)&client_sockfd) < 0) {
+            perror("Unable to create client thread");
+            break;
+        }
 
-   }
+    }
 
-   close(sockfd);
+    close(sockfd);
 
-   return 0;
+    return 0;
 
 }
 
@@ -402,9 +402,9 @@ char *trim(char *str)
     }
 
     if( frontp != str && endp == frontp )
-            *str = '\0';
+        *str = '\0';
     else if( str + len - 1 != endp )
-            *(endp + 1) = '\0';
+        *(endp + 1) = '\0';
 
     /* Shift the string so that it starts at str so that if it's dynamically
      * allocated, we can still free it on the returned pointer.  Note the reuse
@@ -413,8 +413,8 @@ char *trim(char *str)
     endp = str;
     if( frontp != str )
     {
-            while( *frontp ) { *endp++ = *frontp++; }
-            *endp = '\0';
+        while( *frontp ) { *endp++ = *frontp++; }
+        *endp = '\0';
     }
 
     return str;
@@ -422,138 +422,138 @@ char *trim(char *str)
 
 int* getProtocolIndexVals(char* str, int len, int* int_arr, int i_arr_sz)
 {
-  char tempBuff[MAX_LEN] = {'\0'};
-  int index_first_slash = 0;
-  int fname_end_index = 0;
-  int protocolNum_index = 0;
-  int currIndex = 0;
+    char tempBuff[MAX_LEN] = {'\0'};
+    int index_first_slash = 0;
+    int fname_end_index = 0;
+    int protocolNum_index = 0;
+    int currIndex = 0;
 
-  char* http_0 = "HTTP/1.0";
-  char* http_1 = "HTTP/1.1";
+    char* http_0 = "HTTP/1.0";
+    char* http_1 = "HTTP/1.1";
 
-  char* get_prot = "GET /";
-  // IF NOT A GOOD ENTRY
-  // set int arr indexes all to 0
-  if ( str == NULL ) {
-    int_arr[GET] = WRONG_PROT;
+    char* get_prot = "GET /";
+    // IF NOT A GOOD ENTRY
+    // set int arr indexes all to 0
+    if ( str == NULL ) {
+        int_arr[GET] = WRONG_PROT;
+        return int_arr;
+    }
+    if ( str[0] == '\0' ) {
+
+        int_arr[GET] = WRONG_PROT;
+        return int_arr;
+    }
+
+    // OTHERWISE PARSE
+
+    // GET PROTOCOL
+    for (int i = currIndex; i < len; i++) {
+
+        index_first_slash = i;
+        tempBuff[i] = str[i];
+        int_arr[GET] = i;
+        if (str[i] == '/') {
+            break;
+        }
+    }
+    // check protocol
+    printf("\nGET comm: %s, currIndex : %d\n", tempBuff, currIndex);
+    if (strcmp(tempBuff, get_prot) != 0) {
+        int_arr[GET] = WRONG_PROT;
+        return int_arr;
+    }
+
+    // print check
+
+
+    // empty buffer
+    memset(&tempBuff[0], '\0', MAX_LEN);
+
+
+    currIndex = index_first_slash + 1; // start on first letter next word
+
+    // GET FNAME index
+    for (int i = currIndex, j = 0; i < len; i++, j++){
+        fname_end_index = i;
+        if (str[i] == ' ') {
+            break;
+        }
+        tempBuff[j] = str[i];
+
+    }
+    //printf("FNAME: %s, fname_Index: %d\n", tempBuff, fname_end_index); // check fname
+    printf("FNAME: %s\n", tempBuff); // check fname
+
+    currIndex = (fname_end_index + 1); // after "fName " on first letter next word
+
+    int_arr[FNAME] = fname_end_index - 1; // remove space from fname index
+
+    // empty buffer
+    memset(&tempBuff[0], '\0', MAX_LEN);
+
+    // HTTP/NUM
+
+    /*
+     if running from FIREFOX - NEED TO REMOVE unneeded
+     browser request info from intended input
+     These exist after the GET request in the passed string: I.E.
+     GET /fname HTTP/1.1
+     Host:...
+     User-Agent:...
+
+     Host,User-Agent,Accept, Accept-Language,Accept-Encoding,DNT, Connection, Referer
+
+     */
+
+    for (int i = currIndex, j = 0; i < len; i++, j++) {
+        protocolNum_index = i;
+        tempBuff[j] = str[i];
+
+        if (j < strlen(http_0) - 1) {
+            ;
+        }
+        else{
+            break;
+        }
+        if (str[i] == ' ' || str[i] == '\0') {
+            printf("\n");
+            break;
+        }
+    }
+    // printf("PROT/NUM: %s, end_index: %d \n", tempBuff, protocolNum_index);
+    printf("PROT/NUM: %s\n", tempBuff);
+    if ((strcmp(tempBuff, http_0) != 0) && (strcmp(tempBuff, http_1) != 0))
+    {
+        int_arr[REQ_PROT] = BAD_HTTP_REQ;
+        return int_arr;
+    }
+    int_arr[REQ_PROT] = protocolNum_index;
+
     return int_arr;
-  }
-  if ( str[0] == '\0' ) {
-
-    int_arr[GET] = WRONG_PROT;
-    return int_arr;
-  }
-
-// OTHERWISE PARSE
-
-// GET PROTOCOL
- for (int i = currIndex; i < len; i++) {
-
-   index_first_slash = i;
-   tempBuff[i] = str[i];
-   int_arr[GET] = i;
-   if (str[i] == '/') {
-     break;
-   }
- }
- // check protocol
- printf("\nGET comm: %s, currIndex : %d\n", tempBuff, currIndex);
- if (strcmp(tempBuff, get_prot) != 0) {
-   int_arr[GET] = WRONG_PROT;
-   return int_arr;
- }
-
-// print check
-
-
-// empty buffer
-memset(&tempBuff[0], '\0', MAX_LEN);
-
-
-currIndex = index_first_slash + 1; // start on first letter next word
-
-// GET FNAME index
- for (int i = currIndex, j = 0; i < len; i++, j++){
-   fname_end_index = i;
-   if (str[i] == ' ') {
-     break;
-   }
-   tempBuff[j] = str[i];
-
- }
- //printf("FNAME: %s, fname_Index: %d\n", tempBuff, fname_end_index); // check fname
-printf("FNAME: %s\n", tempBuff); // check fname
-
-currIndex = (fname_end_index + 1); // after "fName " on first letter next word
-
-int_arr[FNAME] = fname_end_index - 1; // remove space from fname index
-
-// empty buffer
-memset(&tempBuff[0], '\0', MAX_LEN);
-
-// HTTP/NUM
-
-/*
-if running from FIREFOX - NEED TO REMOVE unneeded
-browser request info from intended input
-These exist after the GET request in the passed string: I.E.
-GET /fname HTTP/1.1
-Host:...
-User-Agent:...
-
-Host,User-Agent,Accept, Accept-Language,Accept-Encoding,DNT, Connection, Referer
-
-*/
-
-for (int i = currIndex, j = 0; i < len; i++, j++) {
-  protocolNum_index = i;
-  tempBuff[j] = str[i];
-
-  if (j < strlen(http_0) - 1) {
-    ;
-  }
-  else{
-    break;
-  }
-  if (str[i] == ' ' || str[i] == '\0') {
-    printf("\n");
-    break;
-  }
-}
-// printf("PROT/NUM: %s, end_index: %d \n", tempBuff, protocolNum_index);
-printf("PROT/NUM: %s\n", tempBuff);
-if ((strcmp(tempBuff, http_0) != 0) && (strcmp(tempBuff, http_1) != 0))
-{
-  int_arr[REQ_PROT] = BAD_HTTP_REQ;
-  return int_arr;
-}
-int_arr[REQ_PROT] = protocolNum_index;
-
-  return int_arr;
 }
 
 int containsWrongProt(int* int_arr, int i_arr_sz)
 {
-  for (int i = 0; i < i_arr_sz; i++)
-  {
-    if (int_arr[i] == WRONG_PROT)
+    for (int i = 0; i < i_arr_sz; i++)
     {
-      return -1;
+        if (int_arr[i] == WRONG_PROT)
+        {
+            return -1;
+        }
     }
-  }
-  return 0;
+    return 0;
 }
 
 int checkPermissions(char* str)
 {
-  // Check read access
-  int status = 0;
-  status = access (str, R_OK);
-  //printf ("ENOENT: %d\nEACCESS: %d", ENOENT, EACCES);
+    // Check read access
+    int status = 0;
+    status = access (str, R_OK);
+    //printf ("ENOENT: %d\nEACCESS: %d", ENOENT, EACCES);
     if (errno == ENOENT)
-      return FNF;
+        return FNF;
     else if (errno == EACCES)
-      return NO_ACCESS;
+        return NO_ACCESS;
 
-return FNF;
+    return FNF;
 }
